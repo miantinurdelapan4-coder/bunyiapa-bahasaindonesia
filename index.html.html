@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2457d6">
+<title>BounceQuiz AI — Bunyi Apa?</title>
+<style>
+:root{--navy:#17356f;--blue:#2862df;--sky:#eaf4ff;--ink:#183153;--muted:#60718b;--green:#1d9b67;--orange:#ffb84d;--pink:#ff7f9d}
+*{box-sizing:border-box}
+body{margin:0;font-family: "Trebuchet MS",Arial,sans-serif;color:var(--ink);background:linear-gradient(145deg,#f2f8ff 0%,#fff8e9 55%,#f2f0ff 100%);min-height:100vh}
+button{font:inherit}
+.app{max-width:1180px;margin:auto;padding:20px}
+header{background:linear-gradient(120deg,#214fbe,#397be9);color:white;border-radius:24px;padding:22px 26px;box-shadow:0 12px 28px #244d9b2b;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:#ffffff14;right:-45px;top:-110px}
+.brand{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.logo{width:58px;height:58px;border-radius:18px;background:#fff;color:#2862df;display:grid;place-items:center;font-size:30px;box-shadow:0 5px 12px #17356f44}
+h1{margin:0;font-size:clamp(25px,4vw,38px);letter-spacing:.3px}
+.subtitle{margin:4px 0 0;color:#e6efff;font-size:14px}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px;position:relative;z-index:1}
+.meta span{background:#ffffff20;border:1px solid #ffffff35;border-radius:999px;padding:7px 12px;font-size:13px}
+.instruction{margin:16px 0 18px;background:#fff;border:1px solid #e2eafa;border-radius:16px;padding:13px 16px;color:#405572;box-shadow:0 4px 12px #234b8a0b}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:13px}
+.stat{background:#fff;border:1px solid #e4ebf6;border-radius:16px;padding:13px 16px;box-shadow:0 4px 12px #234b8a0a}
+.stat small{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}.stat strong{font-size:23px;color:var(--navy)}
+.progress-wrap{background:#dfe9f8;height:11px;border-radius:20px;overflow:hidden;margin:0 0 20px}
+#progressBar{height:100%;width:0;background:linear-gradient(90deg,#20b77b,#83d96b);border-radius:20px;transition:width .35s}
+.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 255px;gap:16px;align-items:stretch}
+.playfield{height:510px;position:relative;overflow:hidden;border-radius:22px;border:3px solid #d8e8ff;background:radial-gradient(circle at 20% 20%,#fff 0 3px,transparent 4px),radial-gradient(circle at 80% 70%,#fff 0 4px,transparent 5px),linear-gradient(160deg,#dff2ff,#eaf0ff 60%,#fff1e4);background-size:100% 100%,100% 100%,100% 100%;box-shadow:inset 0 0 30px #6da5dc18}
+.playfield:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#8bb6e533 1px,transparent 1px);background-size:22px 22px;pointer-events:none}
+.ball{position:absolute;width:62px;height:62px;border:3px solid #ffffffd9;border-radius:50%;display:grid;place-items:center;color:white;font-weight:900;font-size:19px;text-shadow:0 2px 3px #0003;box-shadow:inset -7px -8px 12px #0002,inset 5px 5px 9px #ffffff55,0 7px 12px #254a7730;cursor:pointer;user-select:none;transition:transform .15s,filter .15s;z-index:2}
+.ball:hover{transform:scale(1.12);filter:brightness(1.08)}
+.ball.done{background:linear-gradient(145deg,#36c98d,#159b69)!important;cursor:not-allowed;opacity:.9}
+.ball.done:after{content:"✓";position:absolute;right:-4px;top:-7px;background:white;color:#159b69;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:14px;text-shadow:none;box-shadow:0 2px 5px #0002}
+.side-panel{background:#fff;border:1px solid #e3eaf5;border-radius:20px;padding:18px;box-shadow:0 5px 16px #234b8a0a}
+.side-panel h3{margin:0 0 8px;color:var(--navy);font-size:17px}
+.side-panel p{margin:0 0 15px;color:var(--muted);font-size:13px;line-height:1.5}
+.legend{display:flex;align-items:center;gap:9px;font-size:13px;margin:11px 0;color:#50627d}
+.dot{width:15px;height:15px;border-radius:50%;background:linear-gradient(145deg,#ffca62,#f08b35);display:inline-block}
+.dot.green{background:linear-gradient(145deg,#36c98d,#159b69)}
+.sound-btn,.secondary-btn{border:1px solid #dce6f5;background:#f6f9ff;color:#31517e;border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:700}
+.sound-btn{width:100%;margin-top:14px}
+.hint{margin-top:16px;padding:12px;background:#fff8e9;border-radius:13px;color:#76572a;font-size:12px;line-height:1.5}
+footer{text-align:center;color:#8492a7;font-size:12px;padding:18px 0 6px}
+.modal-backdrop{position:fixed;inset:0;background:#122448a8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal-backdrop.show{display:flex}
+.modal{width:min(620px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:24px;box-shadow:0 22px 70px #071b3c55;animation:pop .2s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.modal-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}
+.pill{background:#eaf2ff;color:#2457b7;padding:7px 11px;border-radius:999px;font-weight:800;font-size:12px}
+.close{border:0;background:#f1f4f9;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;color:#52647c}
+.question{font-size:clamp(19px,3vw,24px);line-height:1.4;color:#18356c;font-weight:800;margin:10px 0 18px}
+.options{display:grid;gap:10px}
+.option{width:100%;text-align:left;border:2px solid #e3eaf5;background:#fbfdff;border-radius:14px;padding:13px 15px;cursor:pointer;color:#29415f;font-weight:700;display:flex;gap:12px;align-items:center}
+.option .letter{flex:0 0 30px;height:30px;border-radius:9px;background:#eaf2ff;color:#2457b7;display:grid;place-items:center}
+.option:hover:not(:disabled){border-color:#80a9f1;background:#f4f8ff}
+.option.correct{border-color:#28b47b;background:#eafff4}.option.wrong{border-color:#f18a8a;background:#fff1f1}
+.option:disabled{cursor:default}
+.open-answer{width:100%;min-height:90px;border:2px solid #dce6f5;border-radius:14px;padding:12px;font:inherit;resize:vertical;outline:none}
+.open-answer:focus{border-color:#6d9be9}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.primary{border:0;border-radius:13px;padding:12px 18px;background:linear-gradient(120deg,#2862df,#4d86ed);color:white;font-weight:800;cursor:pointer;box-shadow:0 5px 12px #2862df30}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.teacher-rubric{display:none;margin-top:14px;padding:14px;border-radius:14px;background:#fff8e9;border:1px solid #f5dfb3}
+.teacher-rubric.show{display:block}
+.rubric-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rubric-buttons button{border:1px solid #e4d4ae;background:white;border-radius:10px;padding:9px 11px;cursor:pointer;font-weight:700;color:#70521f}
+.feedback{display:none;margin-top:15px;padding:14px;border-radius:14px;line-height:1.5}
+.feedback.show{display:block}.feedback.good{background:#eafff3;color:#176b49}.feedback.bad{background:#fff1f1;color:#9c3434}.feedback.partial{background:#fff8e9;color:#76572a}
+.explanation{margin-top:6px;font-weight:500}
+.result{display:none;margin-top:20px;background:#fff;border:2px solid #dce9ff;border-radius:22px;padding:24px;box-shadow:0 10px 25px #234b8a12}
+.result.show{display:block}
+.result h2{color:#2457b7;margin:0 0 8px;font-size:28px}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.result-box{background:#f3f7ff;border-radius:14px;padding:13px;text-align:center}.result-box small{display:block;color:#6b7b93;font-size:11px}.result-box strong{display:block;font-size:22px;color:#1d3d79;margin-top:5px}
+@media(max-width:800px){.game-layout{grid-template-columns:1fr}.playfield{height:470px}.side-panel{display:grid;grid-template-columns:1fr 1fr;gap:8px}.side-panel h3,.side-panel p{grid-column:1/-1}.sound-btn{margin:0}.hint{margin:0}}
+@media(max-width:520px){.app{padding:12px}.stats{gap:7px}.stat{padding:10px}.stat strong{font-size:19px}.playfield{height:440px}.ball{width:52px;height:52px;font-size:16px}.side-panel{display:block}.sound-btn{margin-top:10px}.result-grid{grid-template-columns:repeat(2,1fr)}.modal{padding:18px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo" aria-hidden="true">🔊</div><div><h1>BounceQuiz AI</h1><p class="subtitle">Belajar mengenali bunyi sambil bermain!</p></div></div>
+  <div class="meta"><span>📚 Bahasa Indonesia</span><span>🎵 Materi: Bunyi Apa?</span><span>🎒 Kelas 1 SD</span><span>📝 Asesmen Formatif</span></div>
+</header>
+<div class="instruction">👋 <b>Halo, teman hebat!</b> Klik bola bernomor untuk membuka pertanyaan. Jawab setiap pertanyaan sampai semua bola selesai. Dengarkan baik-baik dan semangat belajar!</div>
+<section class="stats" aria-live="polite">
+  <div class="stat"><small>Terjawab</small><strong id="answered">0 / 15</strong></div>
+  <div class="stat"><small>Skor Benar (100 poin)</small><strong id="correctCount">0</strong></div>
+  <div class="stat"><small>Soal Tersisa</small><strong id="remaining">15</strong></div>
+</section>
+<div class="progress-wrap" aria-label="Progress pengerjaan"><div id="progressBar"></div></div>
+<div class="game-layout">
+  <main class="playfield" id="playfield" aria-label="Area permainan bola bernomor"></main>
+  <aside class="side-panel">
+    <h3>🎯 Cara Bermain</h3>
+    <p>Pilih bola yang bergerak. Baca soal, lalu pilih jawaban atau jawab secara lisan kepada guru.</p>
+    <div class="legend"><span class="dot"></span> Belum dijawab</div>
+    <div class="legend"><span class="dot green"></span> Sudah selesai</div>
+    <button class="sound-btn" id="soundToggle" type="button">🔊 Suara: Aktif</button>
+    <div class="hint">💡 <b>Ingat!</b> Kita mendengar menggunakan telinga. Bunyi dapat berasal dari alam atau dibuat oleh manusia.</div>
+  </aside>
+</div>
+<section class="result" id="result" aria-live="polite">
+  <h2>🎉 BounceQuiz Selesai!</h2>
+  <p>Hebat! Kamu sudah menyelesaikan semua pertanyaan. Teruslah belajar mengenali bunyi di sekitarmu.</p>
+  <div class="result-grid">
+    <div class="result-box"><small>Jumlah Soal</small><strong id="rTotal">15</strong></div>
+    <div class="result-box"><small>Jawaban Benar</small><strong id="rCorrect">0</strong></div>
+    <div class="result-box"><small>Jawaban Salah</small><strong id="rWrong">0</strong></div>
+    <div class="result-box"><small>Sebagian Benar</small><strong id="rPartial">0</strong></div>
+  </div>
+  <div class="result-box"><small>Nilai Akhir</small><strong id="rScore">0</strong></div>
+  <p id="resultMessage"></p>
+  <button class="primary" id="playAgain" type="button">↻ Main Lagi</button>
+</section>
+<footer>BounceQuiz AI • Media asesmen formatif Bahasa Indonesia kelas 1 SD</footer>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalQuestion">
+ <div class="modal">
+  <div class="modal-top"><span class="pill" id="questionType">SOAL PILIHAN GANDA</span><button class="close" id="closeModal" aria-label="Tutup">×</button></div>
+  <div class="pill" id="ballNumber">BOLA 1</div>
+  <div class="question" id="modalQuestion"></div>
+  <div id="choiceArea" class="options"></div>
+  <div id="oralArea" style="display:none">
+    <label for="oralText"><b>Catatan jawaban siswa (opsional):</b></label>
+    <textarea class="open-answer" id="oralText" placeholder="Guru dapat mencatat jawaban siswa di sini..."></textarea>
+    <div class="actions"><button class="primary" id="submitOral" type="button">Kirim untuk Dinilai Guru</button></div>
+  </div>
+  <div class="feedback" id="feedback"></div>
+  <div class="teacher-rubric" id="teacherRubric">
+    <b>👩‍🏫 Penilaian Guru — pilih hasil jawaban lisan:</b>
+    <div class="rubric-buttons">
+      <button data-score="100" type="button">Sangat tepat · 100</button>
+      <button data-score="50" type="button">Cukup tepat · 50</button>
+      <button data-score="0" type="button">Belum tepat · 0</button>
+    </div>
+    <p style="font-size:12px;margin:9px 0 0;color:#76572a">Indikator: <span id="oralIndicator"></span></p>
+    <p style="font-size:12px;margin:5px 0 0;color:#76572a">Rubrik: 100 = jawaban tepat dan lengkap; 50 = jawaban sebagian benar; 0 = jawaban salah atau belum diberikan.</p>
+  </div>
+  <div class="actions" id="afterActions" style="display:none"><button class="primary" id="nextQuestion" type="button">Kembali ke Bola</button></div>
+ </div>
+</div>
+<script>
+"use strict";
+const questions = [
+ {type:"mc",q:"Kita mendengar bunyi menggunakan ....",opts:["Mata","Telinga","Hidung","Tangan"],a:1,why:"Telinga adalah indra pendengaran. Telinga membantu kita mendengar bunyi."},
+ {type:"mc",q:"Manakah bunyi yang berasal dari alam?",opts:["Suara hujan","Bel sekolah","Suara radio","Suara drum"],a:0,why:"Hujan adalah peristiwa alam. Bunyi hujan terdengar saat air jatuh."},
+ {type:"mc",q:"Bunyi ayam berkokok berasal dari ....",opts:["Kendaraan","Alat musik","Hewan","Telepon"],a:2,why:"Ayam adalah hewan. Kokok ayam merupakan bunyi dari hewan."},
+ {type:"mc",q:"Manakah yang termasuk bunyi buatan manusia?",opts:["Petir","Angin bertiup","Ombak laut","Bel sekolah"],a:3,why:"Bel sekolah dibuat manusia dan dibunyikan sebagai tanda."},
+ {type:"mc",q:"Saat daun tertiup angin, kita dapat mendengar bunyi ....",opts:["Gemuruh mesin","Gesekan daun","Klakson","Peluit"],a:1,why:"Daun yang bergerak dan bergesekan dapat menimbulkan bunyi."},
+ {type:"mc",q:"Bunyi petir biasanya terdengar saat ....",opts:["Hujan atau badai","Kita membaca buku","Lampu dinyalakan","Pintu dibuka"],a:0,why:"Petir merupakan gejala alam yang sering terjadi saat hujan atau badai."},
+ {type:"mc",q:"Manakah benda yang dapat menghasilkan bunyi ketika dipukul?",opts:["Bantal","Kertas","Drum","Kapas"],a:2,why:"Drum menghasilkan bunyi ketika permukaannya dipukul."},
+ {type:"mc",q:"Suara ombak yang bergulung di pantai termasuk bunyi ....",opts:["Buatan","Alam","Mesin","Elektronik"],a:1,why:"Ombak merupakan bagian dari alam sehingga bunyinya termasuk bunyi alam."},
+ {type:"mc",q:"Ketika teman berkata, kita mendengar bunyi ....",opts:["Suara manusia","Suara hujan","Suara angin","Suara petir"],a:0,why:"Saat berbicara, manusia menghasilkan bunyi melalui suara."},
+ {type:"mc",q:"Manakah pasangan bunyi alam?",opts:["Radio dan bel","Drum dan gitar","Klakson dan telepon","Burung berkicau dan air mengalir"],a:3,why:"Kicau burung dan aliran air berasal dari kejadian di alam."},
+ {type:"mc",q:"Jika ingin mengetahui bunyi lonceng, kita harus ....",opts:["Melihat warnanya saja","Mendengarkannya dengan telinga","Menciumnya","Menyentuhnya saja"],a:1,why:"Bunyi lonceng diketahui dengan cara mendengarkannya menggunakan telinga."},
+ {type:"oral",q:"Sebutkan tiga bunyi alam yang pernah kamu dengar!",indicator:"Menyebutkan tiga contoh bunyi alam, misalnya hujan, petir, angin, ombak, aliran air, atau kicau burung.",why:"Contoh bunyi alam antara lain suara hujan, petir, angin, ombak, dan burung berkicau."},
+ {type:"oral",q:"Sebutkan tiga bunyi buatan yang ada di sekitarmu!",indicator:"Menyebutkan tiga contoh bunyi yang dibuat manusia atau benda buatan, misalnya bel, drum, radio, klakson, atau tepuk tangan.",why:"Contoh bunyi buatan antara lain bel sekolah, drum, radio, klakson, dan tepuk tangan."},
+ {type:"oral",q:"Apa nama indra yang kita gunakan untuk mendengar? Jelaskan kegunaannya!",indicator:"Menyebutkan telinga dan menjelaskan bahwa telinga digunakan untuk mendengar bunyi.",why:"Kita menggunakan telinga untuk mendengar berbagai bunyi di sekitar."},
+ {type:"oral",q:"Dengarkan bunyi di sekitarmu. Sebutkan satu bunyi yang kamu dengar dan asal bunyinya!",indicator:"Menyebutkan satu bunyi yang benar-benar didengar dan mengidentifikasi sumbernya, misalnya suara kendaraan dari motor atau suara burung dari burung.",why:"Banyak bunyi di sekitar kita. Kita dapat mengenali bunyi dengan mendengarkan dan mencari sumbernya."}
+];
+const colors=["#ff9f43","#4e9ce8","#9b78dc","#ed7897","#31b9a2","#e6a83e","#4e83d5","#ef8064","#58b5c9","#a17bd0","#e58eae","#48a77b","#df9c43","#6889df","#d77e54"];
+const field=document.getElementById("playfield"), backdrop=document.getElementById("modalBackdrop");
+let balls=[],done=new Array(15).fill(false),scores=new Array(15).fill(null),current=-1,soundOn=true,audioCtx=null,raf=0,lastTime=0;
+const $=id=>document.getElementById(id);
+function beep(freq=550,duration=.09){if(!soundOn)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.type="sine";g.gain.setValueAtTime(.07,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration)}catch(e){}}
+function setupBalls(){cancelAnimationFrame(raf);field.innerHTML="";balls=[];const w=field.clientWidth,h=field.clientHeight;questions.forEach((q,i)=>{const el=document.createElement("button");el.type="button";el.className="ball";el.textContent=i+1;el.setAttribute("aria-label","Bola soal "+(i+1));el.style.background=`linear-gradient(145deg,${colors[i]},${shade(colors[i])})`;field.appendChild(el);const size=window.innerWidth<=520?52:62;const b={el,x:Math.random()*(w-size),y:Math.random()*(h-size),vx:(Math.random()>.5?1:-1)*(55+Math.random()*48),vy:(Math.random()>.5?1:-1)*(48+Math.random()*55),size};el.addEventListener("click",()=>openQuestion(i));balls.push(b)});lastTime=0;raf=requestAnimationFrame(animate)}
+function shade(hex){let n=parseInt(hex.slice(1),16);let r=Math.max(0,((n>>16)&255)-38),g=Math.max(0,((n>>8)&255)-38),b=Math.max(0,(n&255)-38);return `rgb(${r},${g},${b})`}
+function animate(t){if(!lastTime)lastTime=t;const dt=Math.min((t-lastTime)/1000,.035);lastTime=t;const w=field.clientWidth,h=field.clientHeight;for(const b of balls){if(done[balls.indexOf(b)])continue;b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x<0){b.x=0;b.vx=Math.abs(b.vx)}if(b.y<0){b.y=0;b.vy=Math.abs(b.vy)}if(b.x>w-b.size){b.x=w-b.size;b.vx=-Math.abs(b.vx)}if(b.y>h-b.size){b.y=h-b.size;b.vy=-Math.abs(b.vy)}b.el.style.transform=`translate(${b.x}px,${b.y}px)`}raf=requestAnimationFrame(animate)}
+function updateStats(){const n=done.filter(Boolean).length,correct=scores.filter(s=>s===100).length;$("answered").textContent=`${n} / 15`;$("correctCount").textContent=correct;$("remaining").textContent=15-n;$("progressBar").style.width=(n/15*100)+"%";if(n===15)showResult()}
+function openQuestion(i){if(done[i])return;current=i;const q=questions[i];$("questionType").textContent=q.type==="mc"?"SOAL PILIHAN GANDA":"JAWABAN LISAN";$("ballNumber").textContent="BOLA "+(i+1);$("modalQuestion").textContent=q.q;$("feedback").className="feedback";$("feedback").innerHTML="";$("afterActions").style.display="none";$("teacherRubric").classList.remove("show");$("oralText").value="";$("choiceArea").innerHTML="";$("choiceArea").style.display=q.type==="mc"?"grid":"none";$("oralArea").style.display=q.type==="oral"?"block":"none";if(q.type==="mc"){q.opts.forEach((v,j)=>{const btn=document.createElement("button");btn.type="button";btn.className="option";btn.innerHTML=`<span class="letter">${"ABCD"[j]}</span><span>${v}</span>`;btn.addEventListener("click",()=>answerMC(j));$("choiceArea").appendChild(btn)})}else{$("oralIndicator").textContent=q.indicator}backdrop.classList.add("show");beep(620)}
+function answerMC(choice){const q=questions[current],buttons=[...$("choiceArea").querySelectorAll("button")];buttons.forEach((b,j)=>{b.disabled=true;if(j===q.a)b.classList.add("correct");if(j===choice&&choice!==q.a)b.classList.add("wrong")});const ok=choice===q.a;scores[current]=ok?100:0;done[current]=true;balls[current].el.classList.add("done");balls[current].el.disabled=true;const fb=$("feedback");fb.className="feedback show "+(ok?"good":"bad");fb.innerHTML=`<b>${ok?"🌟 Hebat! Jawabanmu benar!":"💛 Tidak apa-apa, tetap semangat!"}</b><div class="explanation"><b>Pembahasan:</b> ${q.why}</div><div><b>Skor: ${scores[current]} poin</b></div>`;beep(ok?790:250);$("afterActions").style.display="flex";updateStats()}
+$("submitOral").addEventListener("click",()=>{$("teacherRubric").classList.add("show");$("submitOral").disabled=true;$("submitOral").textContent="Jawaban dicatat";});
+document.querySelectorAll(".rubric-buttons button").forEach(btn=>btn.addEventListener("click",()=>{if(current<0||done[current])return;const score=Number(btn.dataset.score);scores[current]=score;done[current]=true;balls[current].el.classList.add("done");balls[current].el.disabled=true;const fb=$("feedback");const cls=score===100?"good":score===50?"partial":"bad";const msg=score===100?"👏 Sangat tepat!":"Terima kasih sudah mencoba!";fb.className="feedback show "+cls;fb.innerHTML=`<b>${msg}</b><div class="explanation"><b>Pembahasan:</b> ${questions[current].why}</div><div><b>Skor guru: ${score} poin</b></div>`;document.querySelectorAll(".rubric-buttons button").forEach(b=>b.disabled=true);$("afterActions").style.display="flex";beep(score===100?790:score===50?500:250);updateStats()}));
+function closeModal(){backdrop.classList.remove("show");current=-1}
+$("closeModal").addEventListener("click",closeModal);$("nextQuestion").addEventListener("click",closeModal);backdrop.addEventListener("click",e=>{if(e.target===backdrop)closeModal()});
+function showResult(){cancelAnimationFrame(raf);const vals=scores.filter(s=>s!==null),sum=vals.reduce((a,b)=>a+b,0),right=vals.filter(s=>s===100).length,wrong=vals.filter(s=>s===0).length,partial=vals.filter(s=>s===50).length,score=Math.round(sum/15);$("rTotal").textContent="15";$("rCorrect").textContent=right;$("rWrong").textContent=wrong;$("rPartial").textContent=partial;$("rScore").textContent=score;$("resultMessage").textContent=score>=85?"Luar biasa! Kamu hebat mengenali bunyi!":score>=65?"Bagus! Terus berlatih mendengarkan bunyi di sekitarmu.":"Tetap semangat! Ayo belajar lagi mengenali bunyi alam dan buatan.";$("result").classList.add("show");$("result").scrollIntoView({behavior:"smooth",block:"center"})}
+$("playAgain").addEventListener("click",()=>{done=new Array(15).fill(false);scores=new Array(15).fill(null);$("result").classList.remove("show");$("submitOral").disabled=false;$("submitOral").textContent="Kirim untuk Dinilai Guru";document.querySelectorAll(".rubric-buttons button").forEach(b=>b.disabled=false);updateStats();setupBalls();window.scrollTo({top:0,behavior:"smooth"})});
+$("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;$("soundToggle").textContent=soundOn?"🔊 Suara: Aktif":"🔇 Suara: Mati";if(soundOn)beep()});
+let resizeTimer;window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(!done.every(Boolean))setupBalls()},180)});
+updateStats();setupBalls();
+</script>
+</body>
+</html>
